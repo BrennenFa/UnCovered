@@ -12,7 +12,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "JSearch",
-  description: "AI Powered Analysis of the Epstein Files.",
+  description: "AI Powered Analysis of the UnCovered Files.",
 };
 
 export default function RootLayout({

@@ -1,4 +1,4 @@
-# Epstein Document Research - Frontend
+# UnCovered Document Research - Frontend
 
 A professional, authoritative legal document analysis interface built with Next.js 15, TypeScript, and Tailwind CSS.
 

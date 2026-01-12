@@ -117,19 +117,12 @@ export default function ChatInterface() {
         <div className="flex-1 flex items-center justify-center p-12">
           <div className="text-center space-y-6 max-w-3xl">
             <div className="mb-8">
-              <Image
-                src="/jeff.webp"
-                alt="ChatEpstein Logo"
-                width={300}
-                height={300}
-                className="mx-auto rounded-2xl"
-              />
             </div>
             <h2 className="text-4xl font-normal text-gray-900 dark:text-gray-100 tracking-tight">
               Ask About the Documents
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-lg font-light leading-relaxed">
-              Search through the Epstein Files with AI-powered analysis
+              Search through the UnCovered Files with AI-powered analysis
             </p>
           </div>
         </div>

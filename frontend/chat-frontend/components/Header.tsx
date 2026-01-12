@@ -17,7 +17,7 @@ export default function Header() {
             JSearch
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 font-light">
-            Epstein Files Reader Powered by AI
+            UnCovered Files Reader Powered by AI
           </p>
         </div>
 
