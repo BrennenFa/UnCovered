@@ -1,9 +1,12 @@
 'use client';
 
 import { useTheme } from '@/contexts/ThemeContext';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
+  const pathname = usePathname();
 
   const handleClick = () => {
     toggleTheme();
@@ -13,13 +16,38 @@ export default function Header() {
     <header className="w-full bg-white dark:bg-black border-b border-gray-200 dark:border-zinc-800 transition-colors">
       <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 tracking-tight">
-            UnCovered
-          </h1>
+          <Link href="/">
+            <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 tracking-tight cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+              UnCovered
+            </h1>
+          </Link>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 font-light">
             UnCovered Files Reader Powered by AI
           </p>
         </div>
+
+        <nav className="flex items-center gap-6">
+          <Link
+            href="/"
+            className={`text-sm font-medium transition-colors ${
+              pathname === '/'
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+            }`}
+          >
+            Chat
+          </Link>
+          <Link
+            href="/sources"
+            className={`text-sm font-medium transition-colors ${
+              pathname === '/sources'
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+            }`}
+          >
+            Sources
+          </Link>
+        </nav>
 
         <div className="flex items-center gap-3">
           <a

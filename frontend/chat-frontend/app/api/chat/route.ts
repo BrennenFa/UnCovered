@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
     const formattedResponse = {
       answer: data.answer,
       citations: data.citations || {},
+      sources: data.sources || [],
       sessionId: data.session_id,
       tokensUsed: data.tokens_used,
       promptTokens: data.prompt_tokens,

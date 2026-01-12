@@ -9,9 +9,10 @@ export interface Message {
 }
 
 export interface Source {
-  documentId: string;
-  pageNumber: string;
-  quote: string;
+  document_id: string;
+  page: string;
+  source: string;
+  url: string;
 }
 
 export interface ChatResponse {

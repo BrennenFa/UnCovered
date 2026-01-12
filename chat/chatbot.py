@@ -231,6 +231,7 @@ WRONG: ❌ (Document 1, Page 1.0)
         # clear metadata to prevent excess memory usage
         doc_metadata.clear()
         citations_metadata.clear()
+        all_sources_metadata.clear()
         gc.collect()
 
         # Contextualize question with chat history if available
@@ -277,6 +278,15 @@ WRONG: ❌ (Document 1, Page 1.0)
                 'url': source_url
             }
 
+            # Store all retrieved documents for displaying to user
+            all_sources_metadata[citation_key] = {
+                'source': first_chunk.metadata.get('source', 'Unknown'),
+                'document_id': doc_id,
+                'page': page,
+                's3_key': s3_key,
+                'url': source_url
+            }
+
             doc_text = (
                 f"=== DOCUMENT {doc_number} ===\n"
                 f"Source: {first_chunk.metadata.get('source', 'Unknown')}\n"
@@ -296,6 +306,9 @@ WRONG: ❌ (Document 1, Page 1.0)
 
     # Store citations metadata for API response
     citations_metadata = {}
+
+    # Store all retrieved documents metadata for API response
+    all_sources_metadata = {}
 
     # Function to append sources based on citations in LLM answer
     def append_sources(llm_answer: str) -> str:
@@ -388,8 +401,8 @@ WRONG: ❌ (Document 1, Page 1.0)
         history_messages_key="chat_history",
     )
 
-    # Return both the chain and the citations metadata dict
-    return conversational_rag_chain, citations_metadata
+    # Return the chain, citations metadata, and all sources metadata
+    return conversational_rag_chain, citations_metadata, all_sources_metadata
 
 
 def track_tokens(qa_chain, user_input, total_tokens):
@@ -419,7 +432,7 @@ def chat_session():
     print("="*50)
     print("Loading vector database and LLM...")
 
-    rag_chain, citations_metadata = setup_rag_chain()
+    rag_chain, citations_metadata, all_sources_metadata = setup_rag_chain()
 
     model = os.getenv("MODEL_NAME")
     db_dir = os.getenv("DB_DIR")

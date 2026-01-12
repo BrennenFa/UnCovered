@@ -50,6 +50,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str = Field(..., description="AI-generated answer with citations")
     citations: Dict[str, str] = Field(default_factory=dict, description="Map of citation keys to S3 URLs")
+    sources: List[Dict[str, str]] = Field(default_factory=list, description="All retrieved sources for this query")
     tokens_used: int = Field(..., description="Total tokens consumed")
     prompt_tokens: int = Field(..., description="Input tokens")
     completion_tokens: int = Field(..., description="Output tokens")
@@ -77,12 +78,13 @@ class HealthResponse(BaseModel):
 
 rag_chain = None
 citations_metadata = None
+all_sources_metadata = None
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize the RAG chain when the API starts"""
-    global rag_chain, citations_metadata
-    rag_chain, citations_metadata = setup_rag_chain()
+    global rag_chain, citations_metadata, all_sources_metadata
+    rag_chain, citations_metadata, all_sources_metadata = setup_rag_chain()
 
 
 @app.get("/", response_model=HealthResponse)
@@ -141,9 +143,21 @@ async def chat(
             # Get citations that were populated during chain execution
             current_citations = dict(citations_metadata)
 
+            # Get all retrieved sources for display
+            all_sources = [
+                {
+                    'document_id': meta['document_id'],
+                    'page': str(meta['page']),
+                    'source': meta['source'],
+                    'url': meta['url']
+                }
+                for meta in all_sources_metadata.values()
+            ]
+
             return ChatResponse(
                 answer=answer,
                 citations=current_citations,
+                sources=all_sources,
                 tokens_used=cb.total_tokens,
                 prompt_tokens=cb.prompt_tokens,
                 completion_tokens=cb.completion_tokens,

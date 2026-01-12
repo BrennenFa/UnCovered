@@ -87,10 +87,15 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         </div>
 
         {!isUser && message.sources && message.sources.length > 0 && (
-          <div className="mt-4 space-y-3">
-            {message.sources.map((source, idx) => (
-              <CitationCard key={idx} source={source} index={idx + 1} />
-            ))}
+          <div className="mt-4">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Relevant Sources:
+            </h3>
+            <div className="space-y-3">
+              {message.sources.map((source, idx) => (
+                <CitationCard key={idx} source={source} index={idx + 1} />
+              ))}
+            </div>
           </div>
         )}
       </div>
