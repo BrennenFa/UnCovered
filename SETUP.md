@@ -1,6 +1,6 @@
-# ChatEpstein Setup Guide
+# UnCovered Setup Guide
 
-A RAG (Retrieval-Augmented Generation) application for querying Jeffrey Epstein-related documents with citations. The system consists of a FastAPI backend and a Next.js frontend.
+A RAG (Retrieval-Augmented Generation) application for querying public investigation documents with citations. The system consists of a FastAPI backend and a Next.js frontend.
 
 ## Project Structure
 
