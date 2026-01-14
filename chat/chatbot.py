@@ -319,8 +319,8 @@ WRONG: ❌ (Document 1, Page 1.0)
         citations_metadata.clear()
 
         # Extract all citations in format (DOC-ID, Page X)
-        citation_pattern = r'\(([A-Z0-9\-_]+),\s*Page\s+([^\)]+)\)'
-        citations = re.findall(citation_pattern, llm_answer)
+        citation_pattern = r'\(([A-Za-z0-9\-_]+),\s*[Pp]age\s+([^\)]+)\)'
+        citations = re.findall(citation_pattern, llm_answer, re.IGNORECASE)
 
         if not citations:
             return llm_answer
