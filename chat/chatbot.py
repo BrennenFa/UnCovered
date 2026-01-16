@@ -1,6 +1,7 @@
 import os
 import sys
 import gc
+import re
 from pathlib import Path
 from collections import defaultdict
 from dotenv import load_dotenv
@@ -143,8 +144,8 @@ CRITICAL: Each document must have its OWN citation. NEVER combine multiple docum
 Format: (DOCUMENT_ID, Page X) - Use EXACT Document ID, NOT "Document 1" or numbers.
 
 CORRECT: Epstein knew Prince Andrew (DOJ-OGR-00024825, Page 1.0) and Bill Clinton (DOJ-OGR-00024826, Page 2.0).
-WRONG: ❌ (Documents 1, 2, DOJ-OGR-00024825, DOJ-OGR-00024826, Page 1.0)
-WRONG: ❌ (Document 1, Page 1.0)
+WRONG: (Documents 1, 2, DOJ-OGR-00024825, DOJ-OGR-00024826, Page 1.0)
+WRONG: (Document 1, Page 1.0)
 
 ### Context
 {context}"""
@@ -313,7 +314,6 @@ WRONG: ❌ (Document 1, Page 1.0)
     # Function to append sources based on citations in LLM answer
     def append_sources(llm_answer: str) -> str:
         """Parse citations from answer and append formatted sources"""
-        import re
 
         # Clear previous citations
         citations_metadata.clear()
@@ -347,14 +347,14 @@ WRONG: ❌ (Document 1, Page 1.0)
                 if meta['url'] and meta['url'] != "N/A":
                     sources_text += f" - [View Document]({meta['url']})"
 
-                # Store citation metadata for frontend (even if URL is N/A)
+                # Store citation metadata for frontend
                 citations_metadata[citation_key] = meta['url']
 
                 sources_text += "\n"
 
         return llm_answer + sources_text
 
-    # chain with doc retrieval
+    # doc retrieval
     retrieval_chain = RunnablePassthrough.assign(context=get_docs)
 
     # Chain: retrieve docs → generate answer → append sources

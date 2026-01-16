@@ -1,6 +1,8 @@
 'use client';
 
 import Header from '@/components/Header';
+import Sidebar from '@/components/Sidebar';
+import { useSidebar } from '@/contexts/SidebarContext';
 
 const sources = [
   {
@@ -12,7 +14,7 @@ const sources = [
   {
     code: 'HC',
     name: 'House Committee Depositions & Testimonies',
-    fullName: 'House Committee on Oversight and Reform Depositions and Testimonies',
+    fullName: 'Oversight Committee Releases Epstein Records Provided by the Department of Justice',
     description: 'Congressional oversight committee depositions and testimonies from investigations conducted by the House Committee on Oversight and Reform.',
   },
   {
@@ -24,10 +26,13 @@ const sources = [
 ];
 
 export default function SourcesPage() {
+  const { isCollapsed } = useSidebar();
+
   return (
     <div className="flex min-h-screen flex-col bg-white dark:bg-black transition-colors">
       <Header />
-      <main className="flex-1 max-w-6xl w-full mx-auto px-8 py-12">
+      <Sidebar />
+      <main className={`flex-1 max-w-6xl w-full mx-auto px-8 py-12 pt-[105px] transition-all duration-300 ${isCollapsed ? 'ml-0' : 'ml-64'}`}>
         <div className="mb-12">
           <h1 className="text-4xl font-medium text-gray-900 dark:text-gray-100 tracking-tight mb-4">
             Document Sources
