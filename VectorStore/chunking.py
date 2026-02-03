@@ -68,7 +68,7 @@ class DocumentChunker:
                 "chunk_index": idx,
                 "text_length": len(chunk),
                 "total_chunks": len(chunks),
-                "entities": [e.lower() for e in entities_list]
+                "entities": ", ".join(e.lower() for e in entities_list)
             })
 
             # add entities at the end of text ---- way to much token usage
@@ -112,7 +112,7 @@ class DocumentChunker:
                 "chunk_index": 0,
                 "text_length": len(page_text),
                 "total_chunks": 1,
-                "entities": [e.lower() for e in entities_list]
+                "entities": ", ".join(e.lower() for e in entities_list)
             })
 
             return [{

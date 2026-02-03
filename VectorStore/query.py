@@ -1,4 +1,4 @@
-from pinecone_connect import pinecone_connect
+from chroma_connect import chroma_connect
 from llm import get_llm
 from typing import List, Dict, Optional, Literal
 
@@ -21,7 +21,7 @@ class RAGQueryEngine:
             llm_model: Specific model name (optional)
         """
 
-        self.vector_db = pinecone_connect()
+        self.vector_db = chroma_connect()
         self.retriever = self.vector_db.as_retriever(search_kwargs={"k": 5})
 
         self.llm = None
@@ -31,7 +31,7 @@ class RAGQueryEngine:
             self.llm = get_llm(provider=llm_provider, model_name=llm_model)
             self._setup_qa_chain()
 
-        print(f"Connected to Pinecone vector database")
+        print(f"Connected to ChromaDB vector database")
 
     def _setup_qa_chain(self):
         """Setup the RetrievalQA chain with custom prompt."""
@@ -78,7 +78,7 @@ Answer:"""
         """
         search_kwargs = {"k": k}
         if filter:
-            search_kwargs["filter"] = filter
+            search_kwargs["where"] = filter
 
         retriever = self.vector_db.as_retriever(search_kwargs=search_kwargs)
         return retriever.get_relevant_documents(query)

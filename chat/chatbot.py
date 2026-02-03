@@ -22,7 +22,7 @@ from botocore.config import Config
 vectorstore_path = Path(__file__).parent.parent / "VectorStore"
 sys.path.insert(0, str(vectorstore_path))
 
-from pinecone_connect import pinecone_connect
+from chroma_connect import chroma_connect
 
 load_dotenv()
 
@@ -108,7 +108,7 @@ def generate_presigned_url(s3_key: str, expiration: int = 3600) -> str:
 def setup_rag_chain():
     """Setup RAG chain with vector DB and LLM"""
     # Connect to vector database
-    vector_db = pinecone_connect()
+    vector_db = chroma_connect()
 
     # Store document metadata for citation lookup
     doc_metadata = {}
@@ -172,35 +172,31 @@ WRONG: (Document 1, Page 1.0)
         # retrieval of entities
         if query_entities:
             entity_clean = [entity.lower() for entity in query_entities]
-            
 
-            entity_docs_max = 8
-            # query for entity-matched docs
-            entity_matched_docs = vector_db.similarity_search(
-                query,
-                k=entity_docs_max,
-                filter={"entities": {"$in": entity_clean}}
-            )
+            # fetch a larger pool, then split by entity match in Python
+            # (ChromaDB metadata is a string, so filtering happens post-retrieval)
+            all_docs = vector_db.similarity_search(query, k=24)
 
-            # calcuate remaining docs needed for 12 total
-            num_entity_matched = len(entity_matched_docs)
-            num_to_total = 8 + (entity_docs_max - num_entity_matched)
+            entity_matched_docs = []
+            normal_docs = []
+            seen_ids = set()
+            for doc in all_docs:
+                doc_id = id(doc)
+                if doc_id in seen_ids:
+                    continue
+                seen_ids.add(doc_id)
+                doc_entities = doc.metadata.get("entities", "")
+                if any(e in doc_entities for e in entity_clean):
+                    entity_matched_docs.append(doc)
+                else:
+                    normal_docs.append(doc)
 
-            normal_docs = vector_db.similarity_search(
-                query,
-                k=num_to_total
-            )
-
-            # combine entities
+            # entity-matched docs first, then the rest (reranker sorts them anyway)
             candidates_docs = entity_matched_docs + normal_docs
-
 
         else:
             # no entities in query
-            candidates_docs = vector_db.similarity_search(
-                query,
-                k=16,
-            )
+            candidates_docs = vector_db.similarity_search(query, k=16)
 
         # Cross-encoder reranking
 

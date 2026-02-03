@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from ingest_pdfs import PDFIngestionPipeline
 from ingest_images import ImageIngestionPipeline
 from ingest_text import TextIngestionPipeline
-from pinecone_connect import pinecone_connect
+from chroma_connect import chroma_connect
 
 # Disable tokenizers parallelism warning when using multiprocessing
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -115,7 +115,7 @@ Examples:
         return False
     # Run sequentially if only one type is selected
     print("Initializing vector database...")
-    vector_db = pinecone_connect()
+    vector_db = chroma_connect()
 
     if run_pdfs:
         pdf_prefix = args.prefix
