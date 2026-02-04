@@ -27,8 +27,6 @@ export default function Header() {
           </Link>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 font-light">
             UnCovered Files Reader Powered by AI
-            Currently Adding New Sources and Migrating to a New Vector Database
-            My apologies
           </p>
         </div>
 
