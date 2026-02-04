@@ -167,7 +167,4 @@ class ImageIngestionPipeline:
         print(f"[Images] Images processed: {len(image_keys)}")
         print(f"[Images] Total chunks added: {total_chunks}")
 
-        # Get Pinecone index stats
-        stats = self.vector_db._index.describe_index_stats()
-        total_vectors = stats.get('total_vector_count', 0)
-        print(f"[Images] Total documents in store: {total_vectors:,}")
+        print(f"[Images] Total documents in store: {self.vector_db._collection.count():,}")

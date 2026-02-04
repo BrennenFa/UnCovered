@@ -161,7 +161,4 @@ class TextIngestionPipeline:
         print(f"[Text] Text files processed: {len(text_keys)}")
         print(f"[Text] Total chunks added: {total_chunks}")
 
-        # Get Pinecone index stats
-        stats = self.vector_db._index.describe_index_stats()
-        total_vectors = stats.get('total_vector_count', 0)
-        print(f"[Text] Total documents in store: {total_vectors:,}")
+        print(f"[Text] Total documents in store: {self.vector_db._collection.count():,}")

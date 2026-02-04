@@ -209,7 +209,4 @@ class PDFIngestionPipeline:
         print(f"[PDFs] PDFs processed: {len(pdf_keys)}")
         print(f"[PDFs] Total chunks added: {total_chunks}")
 
-        # Get Pinecone index stats
-        stats = self.vector_db._index.describe_index_stats()
-        total_vectors = stats.get('total_vector_count', 0)
-        print(f"[PDFs] Total documents in store: {total_vectors:,}")
+        print(f"[PDFs] Total documents in store: {self.vector_db._collection.count():,}")

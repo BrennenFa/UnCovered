@@ -27,7 +27,7 @@ def upload_chunks_to_chroma(chunks: List[Dict], s3_key: str, vector_db) -> int:
     Args:
         chunks: List of dicts with 'text' and 'metadata' keys
         s3_key: S3 key of the source file (used for ID generation)
-        vector_db: Vector store instance (Pinecone, ChromaDB, etc.)
+        vector_db: ChromaDB vector store instance
 
     Returns:
         Number of chunks uploaded
@@ -50,7 +50,6 @@ def upload_chunks_to_chroma(chunks: List[Dict], s3_key: str, vector_db) -> int:
         for chunk in chunks
     ]
 
-    # Upload to vector database (both Pinecone and ChromaDB)
     vector_db.add_documents(documents, ids=ids)
 
     return len(chunks)
