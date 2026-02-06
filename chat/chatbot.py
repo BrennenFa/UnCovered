@@ -107,8 +107,9 @@ def generate_presigned_url(s3_key: str, expiration: int = 3600) -> str:
 
 def setup_rag_chain():
     """Setup RAG chain with vector DB and LLM"""
-    # Connect to vector database
-    vector_db = chroma_connect()
+    # Connect to vector database (remote if QDRANT_URL is set, otherwise local)
+    use_remote = bool(os.getenv("QDRANT_URL"))
+    vector_db = chroma_connect(remote=use_remote)
 
     # Store document metadata for citation lookup
     doc_metadata = {}

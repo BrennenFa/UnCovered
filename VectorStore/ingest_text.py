@@ -161,4 +161,8 @@ class TextIngestionPipeline:
         print(f"[Text] Text files processed: {len(text_keys)}")
         print(f"[Text] Total chunks added: {total_chunks}")
 
-        print(f"[Text] Total documents in store: {self.vector_db._collection.count():,}")
+        try:
+            count = self.vector_db.client.count(collection_name=self.vector_db.collection_name).count
+            print(f"[Text] Total documents in store: {count:,}")
+        except:
+            print(f"[Text] Total documents in store: Unknown")

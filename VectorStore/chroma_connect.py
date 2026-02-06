@@ -1,7 +1,7 @@
-from langchain_chroma import Chroma
+from langchain_qdrant import QdrantVectorStore
 from langchain_core.documents import Document
-from pathlib import Path
 from langchain_huggingface import HuggingFaceEmbeddings
+from qdrant_client import QdrantClient
 import os
 from dotenv import load_dotenv
 
@@ -10,21 +10,33 @@ load_dotenv()
 
 def chroma_connect(
     collection_name: str = "epstein_docs",
-) -> Chroma:
+    remote: bool = False,
+):
     """
-    Get Chroma vector store with HuggingFace embeddings.
+    Get Qdrant vector store with HuggingFace embeddings.
+    By default connects to a local persistent Qdrant. Pass remote=True
+    to connect to the EC2 Qdrant server via QDRANT_URL.
 
     Args:
         collection_name: Name of the collection
+        remote: If True, connect to remote Qdrant on EC2
 
     Returns:
-        Chroma vector store instance
+        QdrantVectorStore instance
     """
-    persist_directory = os.getenv("DB_DIR")
-    if not persist_directory:
-        raise ValueError("DB_DIR not found in environment variables")
-    persist_dir = Path(persist_directory)
-    persist_dir.mkdir(parents=True, exist_ok=True)
+    if remote:
+        qdrant_url = os.getenv("QDRANT_URL")
+        if not qdrant_url:
+            raise ValueError("QDRANT_URL not found in environment variables")
+
+        client = QdrantClient(url=qdrant_url)
+        print(f"Connecting to remote Qdrant at {qdrant_url}, collection: {collection_name}")
+    else:
+        persist_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "qdrant_db")
+        persist_dir = os.path.abspath(persist_dir)
+        os.makedirs(persist_dir, exist_ok=True)
+        client = QdrantClient(path=persist_dir)
+        print(f"Using local Qdrant at {persist_dir}, collection: {collection_name}")
 
     model = "BAAI/bge-base-en-v1.5"
     embeddings = HuggingFaceEmbeddings(
@@ -32,15 +44,28 @@ def chroma_connect(
             model_kwargs={'device': 'cpu'},
             encode_kwargs={'normalize_embeddings': True, 'batch_size': 32}
     )
-    
-    print(f"Initializing Chroma vector store: {collection_name}")
-    database = Chroma(
+
+    # Create collection if it doesn't exist
+    from qdrant_client.models import Distance, VectorParams
+    try:
+        client.get_collection(collection_name=collection_name)
+        count = client.count(collection_name=collection_name).count
+        print(f"Vector store ready. Documents: {count}")
+    except ValueError:
+        # Collection doesn't exist, create it
+        # BAAI/bge-base-en-v1.5 produces 768-dimensional vectors
+        client.create_collection(
+            collection_name=collection_name,
+            vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+        )
+        print(f"Vector store ready. New collection: {collection_name}")
+
+    database = QdrantVectorStore(
+        client=client,
         collection_name=collection_name,
-        embedding_function=embeddings,
-        persist_directory=str(persist_dir),
-        collection_metadata={"hnsw:space": "cosine"}
+        embedding=embeddings,
     )
-    print(f"Vector store ready. Documents: {database._collection.count()}")
+
     return database
 
 

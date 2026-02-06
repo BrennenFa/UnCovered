@@ -31,7 +31,7 @@ class RAGQueryEngine:
             self.llm = get_llm(provider=llm_provider, model_name=llm_model)
             self._setup_qa_chain()
 
-        print(f"Connected to ChromaDB vector database")
+        print(f"Connected to Qdrant vector database")
 
     def _setup_qa_chain(self):
         """Setup the RetrievalQA chain with custom prompt."""

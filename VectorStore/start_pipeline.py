@@ -98,6 +98,12 @@ Examples:
         help='Number of parallel workers for processing (default: 8 for PDFs, 4 for images/text)'
     )
 
+    parser.add_argument(
+        '--remote',
+        action='store_true',
+        help='Connect to remote Qdrant on EC2 instead of local'
+    )
+
     args = parser.parse_args()
 
     # Determine what to run
@@ -115,7 +121,7 @@ Examples:
         return False
     # Run sequentially if only one type is selected
     print("Initializing vector database...")
-    vector_db = chroma_connect()
+    vector_db = chroma_connect(remote=args.remote)
 
     if run_pdfs:
         pdf_prefix = args.prefix

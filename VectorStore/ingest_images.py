@@ -62,14 +62,14 @@ class ImageIngestionPipeline:
 
     def process_image(self, s3_key: str, source: str) -> int:
         """
-        Process a single image: download, OCR, chunk, embed, store.
+        Process a single image: download, OCR, chunk, and upload to Qdrant.
 
         Args:
             s3_key: S3 key of the image file
             source: Source identifier
 
         Returns:
-            Number of chunks added to vector db
+            Number of chunks added
         """
         document_id = Path(s3_key).stem
         file_name = Path(s3_key).name
@@ -83,7 +83,6 @@ class ImageIngestionPipeline:
             text = self.extract_text_from_image(image_bytes, document_id)
 
             if not text:
-                print(f"[Images] No text extracted from {document_id}")
                 return 0
 
             publication_date = extract_date_from_filename(file_name)
@@ -109,9 +108,8 @@ class ImageIngestionPipeline:
             if not chunks:
                 return 0
 
-            # Upload chunks to ChromaDB with idempotency
+            # Upload directly to Qdrant (handles concurrency)
             chunks_added = upload_chunks_to_chroma(chunks, s3_key, self.vector_db)
-
             return chunks_added
 
         except Exception as e:
@@ -148,15 +146,14 @@ class ImageIngestionPipeline:
         print(f"[Images] {len(image_keys)} images to process")
 
         total_chunks = 0
-        # process images with threads
+
+        # Process images with threads - Qdrant handles concurrent writes
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # keep a record of tasks with executor, using s3_key as identifier
             future_to_key = {
                 executor.submit(self.process_image, s3_key, source): s3_key
                 for s3_key in image_keys
             }
 
-            # collect results with progress bar
             for future in tqdm(as_completed(future_to_key), total=len(image_keys), desc="Processing Images"):
                 chunks_added = future.result()
                 total_chunks += chunks_added
@@ -167,4 +164,8 @@ class ImageIngestionPipeline:
         print(f"[Images] Images processed: {len(image_keys)}")
         print(f"[Images] Total chunks added: {total_chunks}")
 
-        print(f"[Images] Total documents in store: {self.vector_db._collection.count():,}")
+        try:
+            count = self.vector_db.client.count(collection_name=self.vector_db.collection_name).count
+            print(f"[Images] Total documents in store: {count:,}")
+        except:
+            print(f"[Images] Total documents in store: Unknown")

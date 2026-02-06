@@ -152,7 +152,7 @@ class PDFIngestionPipeline:
             if not all_chunks:
                 return 0
 
-            # Upload chunks to ChromaDB with idempotency
+            # Upload chunks to Qdrant with idempotency
             chunks_added = upload_chunks_to_chroma(all_chunks, s3_key, self.vector_db)
 
             return chunks_added
@@ -209,4 +209,8 @@ class PDFIngestionPipeline:
         print(f"[PDFs] PDFs processed: {len(pdf_keys)}")
         print(f"[PDFs] Total chunks added: {total_chunks}")
 
-        print(f"[PDFs] Total documents in store: {self.vector_db._collection.count():,}")
+        try:
+            count = self.vector_db.client.count(collection_name=self.vector_db.collection_name).count
+            print(f"[PDFs] Total documents in store: {count:,}")
+        except:
+            print(f"[PDFs] Total documents in store: Unknown")

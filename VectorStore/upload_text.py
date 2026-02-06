@@ -27,7 +27,7 @@ def upload_chunks_to_chroma(chunks: List[Dict], s3_key: str, vector_db) -> int:
     Args:
         chunks: List of dicts with 'text' and 'metadata' keys
         s3_key: S3 key of the source file (used for ID generation)
-        vector_db: ChromaDB vector store instance
+        vector_db: Qdrant vector store instance
 
     Returns:
         Number of chunks uploaded

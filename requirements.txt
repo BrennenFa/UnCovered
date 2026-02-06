@@ -7,8 +7,8 @@ google-auth==2.27.0
 google-auth-oauthlib==1.2.0
 google-auth-httplib2==0.2.0
 google-api-python-client==2.116.0
-chromadb>=0.4.0
-langchain-chroma>=0.1.0
+qdrant-client>=1.7.0
+langchain-qdrant>=0.1.0
 sentence-transformers==2.3.1
 pdfplumber==0.10.3
 PyPDF2==3.0.1
@@ -29,3 +29,5 @@ fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 pydantic>=2.0.0
 slowapi>=0.1.9
+qdrant-client 
+langchain-qdrant

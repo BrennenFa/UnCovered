@@ -39,3 +39,5 @@ yarn-debug.log*
 yarn-error.log*
 
 s3/DOJ2/*
+qdrant_db/*
+qdrant.tar.gz

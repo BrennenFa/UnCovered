@@ -24,7 +24,8 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS middleware
-allowed_origins = os.getenv("FRONTEND_URL")
+frontend_url = os.getenv("FRONTEND_URL")
+allowed_origins = [frontend_url] if frontend_url else ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -171,9 +172,9 @@ async def chat(
 
 
 if __name__ == "__main__":
-    # Run with: python api.py
+    # Run with: python -m chat.api
     uvicorn.run(
-        "api:app",
+        "chat.api:app",
         host="0.0.0.0",
         port=8000,
         reload=True
