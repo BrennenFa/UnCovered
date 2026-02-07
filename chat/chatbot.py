@@ -18,12 +18,11 @@ from sentence_transformers import CrossEncoder
 import spacy
 import boto3
 from botocore.config import Config
-from qdrant_client import QdrantClient
-
 # Add VectorStore directory to path
 vectorstore_path = Path(__file__).parent.parent / "VectorStore"
 sys.path.insert(0, str(vectorstore_path))
 
+from VectorStore.qdrant_connect import qdrant_connect
 
 load_dotenv()
 

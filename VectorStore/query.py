@@ -1,4 +1,4 @@
-from VectorStore.qdrant import qdrant_connect
+from VectorStore.qdrant_connect import qdrant_connect
 from llm import get_llm
 from typing import List, Dict, Optional, Literal
 
