@@ -65,3 +65,4 @@ models/
 # Railway/deployment config (don't need in image)
 Procfile
 nixpacks.toml
+
