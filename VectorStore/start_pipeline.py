@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from ingest_pdfs import PDFIngestionPipeline
 from ingest_images import ImageIngestionPipeline
 from ingest_text import TextIngestionPipeline
-from chroma_connect import chroma_connect
+from VectorStore.qdrant import qdrant_connect
 
 # Disable tokenizers parallelism warning when using multiprocessing
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -121,7 +121,7 @@ Examples:
         return False
     # Run sequentially if only one type is selected
     print("Initializing vector database...")
-    vector_db = chroma_connect(remote=args.remote)
+    vector_db = qdrant_connect(remote=args.remote)
 
     if run_pdfs:
         pdf_prefix = args.prefix

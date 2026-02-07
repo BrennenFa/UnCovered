@@ -4,11 +4,12 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from qdrant_client import QdrantClient
 import os
 from dotenv import load_dotenv
+from qdrant_client.models import Distance, VectorParams
 
 load_dotenv()
 
 
-def chroma_connect(
+def qdrant_connect(
     collection_name: str = "epstein_docs",
     remote: bool = False,
 ):
@@ -45,8 +46,6 @@ def chroma_connect(
             encode_kwargs={'normalize_embeddings': True, 'batch_size': 32}
     )
 
-    # Create collection if it doesn't exist
-    from qdrant_client.models import Distance, VectorParams
     try:
         client.get_collection(collection_name=collection_name)
         count = client.count(collection_name=collection_name).count
@@ -70,7 +69,7 @@ def chroma_connect(
 
 
 # if __name__ == "__main__":
-#     vector_store = chroma_connect(persist_directory="./test_chroma_db")
+#     vector_store = qdrant_connect(persist_directory="./test_chroma_db")
 
 #     test_docs = [
 #         Document(

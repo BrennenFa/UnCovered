@@ -1,4 +1,4 @@
-from chroma_connect import chroma_connect
+from VectorStore.qdrant import qdrant_connect
 from llm import get_llm
 from typing import List, Dict, Optional, Literal
 
@@ -21,7 +21,7 @@ class RAGQueryEngine:
             llm_model: Specific model name (optional)
         """
 
-        self.vector_db = chroma_connect()
+        self.vector_db = qdrant_connect()
         self.retriever = self.vector_db.as_retriever(search_kwargs={"k": 5})
 
         self.llm = None

@@ -22,7 +22,7 @@ from botocore.config import Config
 vectorstore_path = Path(__file__).parent.parent / "VectorStore"
 sys.path.insert(0, str(vectorstore_path))
 
-from chroma_connect import chroma_connect
+from qdrant_connect import qdrant_connect
 
 load_dotenv()
 
@@ -109,7 +109,7 @@ def setup_rag_chain():
     """Setup RAG chain with vector DB and LLM"""
     # Connect to vector database (remote if QDRANT_URL is set, otherwise local)
     use_remote = bool(os.getenv("QDRANT_URL"))
-    vector_db = chroma_connect(remote=use_remote)
+    vector_db = qdrant_connect(remote=use_remote)
 
     # Store document metadata for citation lookup
     doc_metadata = {}
