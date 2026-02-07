@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 from qdrant_client.models import Distance, VectorParams
 from qdrant_client.http.exceptions import UnexpectedResponse
+from langchain_openai import OpenAIEmbeddings
 load_dotenv()
 
 
