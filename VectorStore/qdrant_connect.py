@@ -42,7 +42,7 @@ def qdrant_connect(
         client = QdrantClient(path=persist_dir)
         print(f"Using local Qdrant at {persist_dir}, collection: {collection_name}")
 
-    model = "text-embedding-3-small"
+    model = "sentence-transformers/all-mpnet-base-v2"
     embeddings = HuggingFaceEmbeddings(
             model_name=model,
             model_kwargs={'device': 'cpu'},

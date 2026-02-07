@@ -20,7 +20,7 @@ def generate_id(s3_key: str, page_number: int, chunk_text: str) -> str:
     return hash_obj.hexdigest()
 
 
-def upload_chunks_to_chroma(chunks: List[Dict], s3_key: str, vector_db) -> int:
+def upload_chunks_to_db(chunks: List[Dict], s3_key: str, vector_db) -> int:
     """
     Upload text chunks to vector database with deterministic IDs for idempotency.
 

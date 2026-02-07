@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from ingest_pdfs import PDFIngestionPipeline
 from ingest_images import ImageIngestionPipeline
 from ingest_text import TextIngestionPipeline
-from VectorStore.qdrant import qdrant_connect
+from VectorStore.qdrant_connect import qdrant_connect
 
 # Disable tokenizers parallelism warning when using multiprocessing
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
