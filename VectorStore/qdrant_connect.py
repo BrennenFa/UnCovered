@@ -41,7 +41,7 @@ def qdrant_connect(
         client = QdrantClient(path=persist_dir)
         print(f"Using local Qdrant at {persist_dir}, collection: {collection_name}")
 
-    model = "BAAI/bge-base-en-v1.5"
+    model = "text-embedding-3-small"
     embeddings = HuggingFaceEmbeddings(
             model_name=model,
             model_kwargs={'device': 'cpu'},
@@ -54,7 +54,6 @@ def qdrant_connect(
         print(f"Vector store ready. Documents: {count}")
     except (ValueError, UnexpectedResponse) as e:
         # Collection doesn't exist, create it
-        # BAAI/bge-base-en-v1.5 produces 768-dimensional vectors
 
         client.create_collection(
             collection_name=collection_name,
