@@ -6,7 +6,6 @@ import os
 from dotenv import load_dotenv
 from qdrant_client.models import Distance, VectorParams
 from qdrant_client.http.exceptions import UnexpectedResponse
-from langchain_openai import OpenAIEmbeddings
 load_dotenv()
 
 
@@ -49,16 +48,28 @@ def qdrant_connect(
             encode_kwargs={'normalize_embeddings': True, 'batch_size': 32}
     )
 
-    try:
-        client.get_collection(collection_name=collection_name)
-        count = client.count(collection_name=collection_name).count
-        print(f"Vector store ready. Documents: {count}")
-    except (ValueError, UnexpectedResponse) as e:
-        # Collection doesn't exist, create it
+    expected_dim = 768
 
+    try:
+        collection_info = client.get_collection(collection_name=collection_name)
+        existing_dim = collection_info.config.params.vectors.size
+        count = client.count(collection_name=collection_name).count
+
+        if existing_dim != expected_dim:
+            print(f"Collection has {existing_dim}-dim vectors, expected {expected_dim}. Recreating (had {count} docs)...")
+            client.delete_collection(collection_name=collection_name)
+            client.create_collection(
+                collection_name=collection_name,
+                vectors_config=VectorParams(size=expected_dim, distance=Distance.COSINE),
+            )
+            print(f"Vector store ready. Recreated collection: {collection_name}")
+        else:
+            print(f"Vector store ready. Documents: {count}")
+    except (ValueError, UnexpectedResponse):
+        # Collection doesn't exist, create it
         client.create_collection(
             collection_name=collection_name,
-            vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+            vectors_config=VectorParams(size=expected_dim, distance=Distance.COSINE),
         )
         print(f"Vector store ready. New collection: {collection_name}")
 
