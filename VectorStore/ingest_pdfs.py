@@ -10,7 +10,7 @@ from typing import List, Dict, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from chunking import DocumentChunker
-from upload_text import upload_chunks_to_chroma
+from upload_text import upload_chunks_to_db
 
 load_dotenv()
 
@@ -153,7 +153,7 @@ class PDFIngestionPipeline:
                 return 0
 
             # Upload chunks to Qdrant with idempotency
-            chunks_added = upload_chunks_to_chroma(all_chunks, s3_key, self.vector_db)
+            chunks_added = upload_chunks_to_db(all_chunks, s3_key, self.vector_db)
 
             return chunks_added
 

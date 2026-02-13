@@ -10,7 +10,7 @@ from PIL import Image
 import pytesseract
 
 from chunking import DocumentChunker
-from upload_text import upload_chunks_to_chroma
+from upload_text import upload_chunks_to_db
 from ingest_pdfs import extract_date_from_filename
 
 load_dotenv()
@@ -109,7 +109,7 @@ class ImageIngestionPipeline:
                 return 0
 
             # Upload directly to Qdrant (handles concurrency)
-            chunks_added = upload_chunks_to_chroma(chunks, s3_key, self.vector_db)
+            chunks_added = upload_chunks_to_db(chunks, s3_key, self.vector_db)
             return chunks_added
 
         except Exception as e:

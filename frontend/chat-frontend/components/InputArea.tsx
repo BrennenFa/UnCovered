@@ -33,7 +33,7 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Currently moving my vector db.... sorry for the delay, im a student"
+              placeholder="Ask a question"
               disabled={isLoading}
               rows={1}
               className="flex-1 px-4 py-3 bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none resize-none disabled:opacity-50 text-base font-normal"

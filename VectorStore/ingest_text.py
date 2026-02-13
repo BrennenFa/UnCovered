@@ -8,7 +8,7 @@ from typing import Dict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from chunking import DocumentChunker
-from upload_text import upload_chunks_to_chroma
+from upload_text import upload_chunks_to_db
 from ingest_pdfs import extract_date_from_filename
 
 load_dotenv()
@@ -105,7 +105,7 @@ class TextIngestionPipeline:
                 return 0
 
             # Upload chunks to vector db with idempotency
-            chunks_added = upload_chunks_to_chroma(chunks, s3_key, self.vector_db)
+            chunks_added = upload_chunks_to_db(chunks, s3_key, self.vector_db)
 
             return chunks_added
 
