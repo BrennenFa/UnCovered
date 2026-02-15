@@ -18,7 +18,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from dotenv import load_dotenv
 
 # config variables
-NUM_WORKERS = 2
+NUM_WORKERS = 1
 DATASETS = [9, 10, 11, 12]
 BASE_URL = "https://www.justice.gov/epstein/doj-disclosures/data-set-{}-files?page={}"
 VALID_EXTS = (".pdf", ".jpg", ".jpeg", ".png", ".tiff", ".doc", ".docx", ".xls", ".xlsx", ".zip")
@@ -103,14 +103,6 @@ signal.signal(signal.SIGINT, handle_interrupt)
 signal.signal(signal.SIGTERM, handle_interrupt)
 atexit.register(cleanup_all)
 
-#  PRE-LOAD S3 KEYS to avoid per-file requests
-print("Loading existing S3 keys...")
-existing_s3_keys = set()
-paginator = s3.get_paginator("list_objects_v2")
-for page in paginator.paginate(Bucket=BUCKET, Prefix="epstein_files/"):
-    for obj in page.get("Contents", []):
-        existing_s3_keys.add(obj["Key"])
-print(f"Found {len(existing_s3_keys)} existing files in S3")
 
 
 
@@ -152,12 +144,13 @@ def upload_worker():
         item = upload_queue.get()
         if item is None:
             break
-        data, s3_key, tag, filename = item
+        file_path, s3_key, tag, filename = item
         try:
-            s3.put_object(Bucket=BUCKET, Key=s3_key, Body=data)
+            # Stream file directly to S3 without loading entire file into memory
+            with open(file_path, "rb") as f:
+                s3.put_object(Bucket=BUCKET, Key=s3_key, Body=f)
             with stats_lock:
                 stats["uploaded"] += 1
-                existing_s3_keys.add(s3_key)
                 if stats["uploaded"] % 10 == 0:
                     print(f"[S3] {stats['uploaded']} uploaded, "
                           f"{stats['skipped']} skipped, {stats['failed']} failed")
@@ -167,17 +160,22 @@ def upload_worker():
             with stats_lock:
                 stats["failed"] += 1
         finally:
+            # Clean up file immediately
+            try:
+                os.remove(file_path)
+            except:
+                pass
             upload_queue.task_done()
 
-upload_thread = threading.Thread(target=upload_worker, daemon=True)
-upload_thread.start()
+upload_threads = [threading.Thread(target=upload_worker, daemon=True) for _ in range(4)]
+for t in upload_threads:
+    t.start()
 
 # Selenium Methods
-def create_driver(download_dir):
-    """Create Chrome WebDriver (Selenium) instance with download directory configured."""
+def create_driver(download_dir, driver_path):
     os.makedirs(download_dir, exist_ok=True)
     opts = Options()
-    opts.add_argument("--kximized")
+    opts.add_argument("--start-maximized") # Fixed typo
     prefs = {
         "download.default_directory": download_dir,
         "download.prompt_for_download": False,
@@ -185,11 +183,12 @@ def create_driver(download_dir):
         "plugins.always_open_pdf_externally": True,
     }
     opts.add_experimental_option("prefs", prefs)
+   
+    # Use the pre-installed driver path here
     return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
+        service=Service(executable_path=driver_path),
         options=opts,
     )
-
 def wait_for_page_load(drv, timeout=10):
     """Wait until the page is fully loaded (document.readyState == 'complete')."""
     WebDriverWait(drv, timeout).until(
@@ -256,9 +255,9 @@ def wait_for_download(download_dir, timeout=30):
     return None
 
 # ---------------- DOWNLOAD WORKER ----------------
-def download_worker(worker_id, task_queue):
+def download_worker(worker_id, task_queue, driver_path):
     download_dir = os.path.join(DOWNLOAD_BASE, f"worker_{worker_id}")
-    drv = create_driver(download_dir)
+    drv = create_driver(download_dir, driver_path)
     tag = f"[W{worker_id}]"
 
     try:
@@ -276,12 +275,6 @@ def download_worker(worker_id, task_queue):
             s3_key = s3_key_for(dataset, file_url)
             filename = os.path.basename(urlparse(file_url).path)
 
-            if s3_key in existing_s3_keys:
-                with stats_lock:
-                    stats["skipped"] += 1
-                task_queue.task_done()
-                continue
-
             clear_dir(download_dir)
             drv.get(file_url)
 
@@ -293,15 +286,11 @@ def download_worker(worker_id, task_queue):
             if downloaded:
                 if is_valid_file(downloaded):
                     try:
-                        with open(downloaded, "rb") as f:
-                            data = f.read()
-                        upload_queue.put((data, s3_key, tag, filename))
-                        del data  # Explicitly free memory
+                        upload_queue.put((downloaded, s3_key, tag, filename))
                     except Exception as e:
-                        print(f"{tag} Error reading file: {e}")
+                        print(f"{tag} Error queueing file: {e}")
                         with stats_lock:
                             stats["failed"] += 1
-                    finally:
                         try:
                             os.remove(downloaded)
                         except:
@@ -328,16 +317,20 @@ def download_worker(worker_id, task_queue):
 print(f"Starting {NUM_WORKERS} download workers...")
 task_queue = Queue()
 
+stable_path = ChromeDriverManager().install()
+
 threads = []
 for i in range(NUM_WORKERS):
-    t = threading.Thread(target=download_worker, args=(i, task_queue), daemon=True)
+    t = threading.Thread(target=download_worker, args=(i, task_queue, stable_path), daemon=True)
     t.start()
     threads.append(t)
 
 # Crawler browser for listing pages
 crawler_dir = os.path.join(DOWNLOAD_BASE, "crawler")
 os.makedirs(crawler_dir, exist_ok=True)
-crawler = create_driver(crawler_dir)
+time.sleep(2)
+crawler = create_driver(crawler_dir, stable_path)
+
 
 print("\nCrawler: passing robot check...")
 crawler.get(BASE_URL.format(9, 0))
@@ -370,6 +363,7 @@ for dataset in DATASETS:
             href = link.get_attribute("href")
             if href and href.lower().endswith(VALID_EXTS):
                 file_links.append(href)
+        del links
 
         if not file_links:
             print(f"  No files on page {page}. Dataset {dataset} complete.")
@@ -403,8 +397,10 @@ except Exception as e:
 # Drain upload queue
 try:
     upload_queue.join()
-    upload_queue.put(None)
-    upload_thread.join(timeout=5)
+    for _ in range(4):
+        upload_queue.put(None)
+    for t in upload_threads:
+        t.join(timeout=5)
 except Exception as e:
     print(f"Error draining upload queue: {e}")
 
